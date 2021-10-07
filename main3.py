@@ -1,6 +1,7 @@
 from pprint import pprint
 import csv
 import re
+from typing import List, Union
 
 with open("phonebook_raw.csv") as f:
     rows = csv.reader(f, delimiter=",")
@@ -40,12 +41,14 @@ def separate_fio():
 
 def format_phonebook():
     persons_list_all_formatted = []
+    counter = 0
     for info in separate_fio():
         person_info_list = []
         pattern_phone = r"(\+7|8)\s?\(?(\d{3})\)?\s?\-?(\d{3})\-?(\d{2})\-?(\d{2})\s?\(?[а-я]*\.?\s?(\d{4})?\)?"
-        # if "доб" in info[-2]:
-        #     phone_formatted = re.sub(pattern_phone, r"+7(\2)\3-\4-\5 доб.\6", info[-2])
-        phone_formatted = re.sub(pattern_phone, r"+7(\2)\3-\4-\5", info[-2])
+        if "доб" in info[-2]:
+            phone_formatted = re.sub(pattern_phone, r"+7(\2)\3-\4-\5 доб.\6", info[-2])
+        else:
+            phone_formatted = re.sub(pattern_phone, r"+7(\2)\3-\4-\5", info[-2])
         person_info_list.append(info[0])
         person_info_list.append(info[1])
         person_info_list.append(info[2])
@@ -53,29 +56,29 @@ def format_phonebook():
         person_info_list.append(info[4])
         person_info_list.append(phone_formatted)
         person_info_list.append(info[-1])
+        person_info_list.append(counter)
+        counter += 1
         persons_list_all_formatted.append(person_info_list)
+
     return persons_list_all_formatted
 
+# pprint(format_phonebook())
 
 def join_duplicates():
-    perfect_list = []
+    buffer_list = []
+    join_duplicates_list = []
     for info_list in format_phonebook():
-        counter = 0
-        for info_list2 in format_phonebook():
-            if info_list[0] == info_list2[0] and info_list[1] == info_list2[1]:
-                counter += 1
-                if counter == 1:
-                    person_list = []
-                    for n in range(7):
-                        if info_list[n] != '':
-                            person_list.append(info_list[n])
-                        else:
-                            person_list.append(info_list2[n])
-        perfect_list.append(person_list)
-
-    return perfect_list
-
-join_duplicates()
+        buffer_list.append(info_list)
+        for info_list2 in buffer_list:
+            if info_list[0] == info_list2[0] and info_list[1] == info_list2[1] and info_list[-1] != info_list2[-1]:
+                person_list = []
+                for n in range(7):
+                    if info_list[n] != '':
+                        person_list.append(info_list[n])
+                    else:
+                        person_list.append(info_list2[n])
+                join_duplicates_list.append(person_list)
+    return join_duplicates_list
 
 
 with open("phonebook.csv", "w") as f:
