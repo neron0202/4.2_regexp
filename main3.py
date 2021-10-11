@@ -59,10 +59,7 @@ def format_phonebook():
         person_info_list.append(counter)
         counter += 1
         persons_list_all_formatted.append(person_info_list)
-
     return persons_list_all_formatted
-
-# pprint(format_phonebook())
 
 def join_duplicates():
     buffer_list = []
@@ -81,6 +78,22 @@ def join_duplicates():
     return join_duplicates_list
 
 
+def create_dict():
+    people_dict = {}
+    for person in format_phonebook():
+        del person[-1]
+        people_dict[(person[0], person[1])] = person
+    for person in join_duplicates():
+        people_dict[(person[0], person[1])] = person
+    return people_dict
+
+
+def create_final_list():
+    final_list = []
+    for person in create_dict().values():
+        final_list.append(person)
+    return final_list
+
 with open("phonebook.csv", "w") as f:
   datawriter = csv.writer(f, delimiter=',')
-  datawriter.writerows(join_duplicates())
+  datawriter.writerows(create_final_list())
